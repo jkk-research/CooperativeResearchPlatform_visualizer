@@ -40,15 +40,23 @@ private:
     float dT = 0.02f; // model runs in 20ms
 
     void visualizeEgo();
-    void visualizeLanes(const crp_msgs::msg::Scenario::SharedPtr msg);
+    void visualizeEgoLane(const crp_msgs::msg::Scenario::SharedPtr msg);
+    void visualizeLeftLane(const crp_msgs::msg::Scenario::SharedPtr msg);
+    void visualizeObjects(const crp_msgs::msg::Scenario::SharedPtr msg);
 
     rclcpp::Subscription<crp_msgs::msg::Scenario>::SharedPtr m_sub_scenario_;
     rclcpp::Subscription<crp_msgs::msg::Ego>::SharedPtr m_sub_ego_;
 
     rclcpp::Publisher<foxglove_msgs::msg::SceneUpdate>::SharedPtr m_pub_egoVisualization_;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_laneVisualization_;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_leftBoundVisualization_;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_rightBoundVisualization_;
+    rclcpp::Publisher<foxglove_msgs::msg::SceneUpdate>::SharedPtr m_pub_objectVisualization_;
+
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_egoLaneVisualization_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_egoLaneLeftBoundVisualization_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_egoLaneRightBoundVisualization_;
+
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_leftLaneVisualization_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_leftLaneLeftBoundVisualization_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_leftLaneRightBoundVisualization_;
 
     rclcpp::TimerBase::SharedPtr m_timer_;
 };
