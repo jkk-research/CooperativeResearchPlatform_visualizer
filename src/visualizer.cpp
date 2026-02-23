@@ -33,19 +33,19 @@ void crp::apl::Visualizer::egoCallback(const crp_msgs::msg::Ego::SharedPtr msg)
     foxglove_msgs::msg::SceneEntity entity;
     entity.id = "ego_vehicle";
     entity.timestamp = this->now();   // entity timestamp
-    entity.frame_id = "map";    // or "map", depending on your TF setup
+    entity.frame_id = "base_link";    // or "map", depending on your TF setup
     entity.frame_locked = false;
 
     // Create a cube primitive
     foxglove_msgs::msg::CubePrimitive cube;
-    cube.pose.position.x = msg->pose.pose.position.x;
-    cube.pose.position.y = msg->pose.pose.position.y;
+    cube.pose.position.x = 0;
+    cube.pose.position.y = 0;
     cube.pose.position.z = 0.75;      // half height to sit on ground
 
-    cube.pose.orientation.x = msg->pose.pose.orientation.x;
-    cube.pose.orientation.y = msg->pose.pose.orientation.y;
-    cube.pose.orientation.z = msg->pose.pose.orientation.z;
-    cube.pose.orientation.w = msg->pose.pose.orientation.w;
+    cube.pose.orientation.x = 0;
+    cube.pose.orientation.y = 0;
+    cube.pose.orientation.z = 0;
+    cube.pose.orientation.w = 1;
     cube.size.x = 4.5;   // length
     cube.size.y = 2.0;   // width
     cube.size.z = 1.5;   // height
