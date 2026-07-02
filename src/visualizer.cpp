@@ -7,9 +7,13 @@ crp::apl::Visualizer::Visualizer() : Node("visualizer")
         "/ego", 10, std::bind(&Visualizer::egoCallback, this, std::placeholders::_1));
     m_sub_scenario_   = this->create_subscription<crp_msgs::msg::Scenario>(
         "/scenario", 10, std::bind(&Visualizer::scenarioCallback, this, std::placeholders::_1));
+    m_sub_trajectory_   = this->create_subscription<autoware_planning_msgs::msg::Trajectory>(
+        "/plan/trajectory", 10, std::bind(&Visualizer::trajectoryCallback, this, std::placeholders::_1));
 
     m_pub_egoVisualization_      = this->create_publisher<foxglove_msgs::msg::SceneUpdate>("egoVisualization", 10);
     m_pub_objectVisualization_ = this->create_publisher<foxglove_msgs::msg::SceneUpdate>("objectVisualization", 10);
+
+    m_pub_trajectoryVisualization_      = this->create_publisher<visualization_msgs::msg::Marker>("trajectoryVisualization", 10);
 
     m_pub_egoLaneVisualization_      = this->create_publisher<visualization_msgs::msg::Marker>("egoLaneVisualization", 10);
     m_pub_egoLaneLeftBoundVisualization_ = this->create_publisher<visualization_msgs::msg::Marker>("egoLaneLeftBoundVisualization", 10);    
@@ -22,6 +26,66 @@ crp::apl::Visualizer::Visualizer() : Node("visualizer")
     m_timer_ = this->create_wall_timer(std::chrono::milliseconds(20), std::bind(&Visualizer::run, this));
 
     RCLCPP_INFO(this->get_logger(), "visualizer has been started");
+}
+
+void crp::apl::Visualizer::trajectoryCallback(const autoware_planning_msgs::msg::Trajectory::SharedPtr msg)
+{
+    // planned trajectory visualization
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = "base_link";
+    marker.header.stamp = this->now();   
+
+    marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+
+    // scale.x = line width for LINE_STRIP
+    marker.scale.x = 0.1;
+
+    // color (RGBA)
+    marker.color.r = 0.0f;
+    marker.color.g = 1.0f;
+    marker.color.b = 0.0f;
+    marker.color.a = 1.0f;
+
+    marker.pose.orientation.w = 1.0;  // identity
+
+    marker.lifetime = rclcpp::Duration::from_seconds(0.0); // persistent
+
+    visualization_msgs::msg::Marker trajectoryMarker;
+    trajectoryMarker.header.frame_id = "base_link";
+    trajectoryMarker.header.stamp = this->now();   
+
+    trajectoryMarker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+    trajectoryMarker.action = visualization_msgs::msg::Marker::ADD;
+
+    // scale.x = line width for LINE_STRIP
+    trajectoryMarker.scale.x = 0.1;
+
+    // color (RGBA)
+    trajectoryMarker.color.r = 1.0f;
+    trajectoryMarker.color.g = 0.0f;
+    trajectoryMarker.color.b = 0.0f;
+    trajectoryMarker.color.a = 1.0f;
+
+    trajectoryMarker.pose.orientation.w = 1.0;  // identity
+
+    trajectoryMarker.lifetime = rclcpp::Duration::from_seconds(0.0); // persistent
+
+    if (!msg->points.empty()){
+        for (long unsigned int np=0; np<msg->points.size(); np++)
+        {
+            geometry_msgs::msg::Point p;
+            p.x = msg->points.at(np).pose.position.x;
+            p.y = msg->points.at(np).pose.position.y;
+            p.z = msg->points.at(np).pose.position.z;
+
+            trajectoryMarker.points.push_back(p);
+        }
+    }
+   
+    m_pub_trajectoryVisualization_->publish(trajectoryMarker);
+
+    return;
 }
 
 void crp::apl::Visualizer::egoCallback(const crp_msgs::msg::Ego::SharedPtr msg)
@@ -77,7 +141,7 @@ void crp::apl::Visualizer::scenarioCallback(const crp_msgs::msg::Scenario::Share
 void crp::apl::Visualizer::visualizeObjects (const crp_msgs::msg::Scenario::SharedPtr msg)
 {
     foxglove_msgs::msg::SceneUpdate visu_msg;
-    
+   
     // objects
     for (long unsigned int i = 0; i<msg->local_moving_objects.objects.size(); i++)
     {
@@ -87,8 +151,8 @@ void crp::apl::Visualizer::visualizeObjects (const crp_msgs::msg::Scenario::Shar
         entity.timestamp = this->now();   // entity timestamp
         entity.frame_id = "base_link";    // or "map", depending on your TF setup
         entity.frame_locked = false;
-        entity.lifetime.sec = 0;
-        entity.lifetime.nanosec = 500000000; // 0.5s
+        entity.lifetime.sec = 1;
+        entity.lifetime.nanosec = 0; // 0.5s
 
 
         // Create a cube primitive
@@ -112,6 +176,19 @@ void crp::apl::Visualizer::visualizeObjects (const crp_msgs::msg::Scenario::Shar
             cube.color.r = 1.0f;
             cube.color.g = 0.5f;
             cube.color.b = 1.0f;
+            cube.color.a = 0.5f;
+        }
+        else if(msg->local_moving_objects.objects.at(i).classification.at(0).label == 7U)
+        {
+            // truck
+            cube.size.x = 0.6;   // length
+            cube.size.y = 0.6;   // width
+            cube.size.z = 1.85;   // height
+            cube.pose.position.z = 0.925;      // half height to sit on ground
+
+            cube.color.r = 1.0f;
+            cube.color.g = 0.5f;
+            cube.color.b = 0.0f;
             cube.color.a = 0.5f;
         }
         else{
@@ -233,7 +310,6 @@ void crp::apl::Visualizer::visualizeEgoLane(const crp_msgs::msg::Scenario::Share
             leftBoundMarker.points.push_back(leftBoundPoint);
             rightBoundMarker.points.push_back(rightBoundPoint);
         }
-
     }
    
     m_pub_egoLaneVisualization_->publish(marker);

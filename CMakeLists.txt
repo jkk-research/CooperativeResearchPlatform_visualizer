@@ -13,6 +13,7 @@ find_package(foxglove_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
 include_directories(include)
 
@@ -21,7 +22,8 @@ add_executable(visualizer src/visualizer.cpp)
   geometry_msgs
   crp_msgs
   foxglove_msgs
-  visualization_msgs)
+  visualization_msgs
+  autoware_planning_msgs)
 
 install(TARGETS
   visualizer

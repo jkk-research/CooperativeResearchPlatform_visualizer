@@ -9,6 +9,7 @@
 
 #include <crp_msgs/msg/ego.hpp>
 #include <crp_msgs/msg/scenario.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 
 #include "foxglove_msgs/msg/scene_update.hpp"
 #include "visualization_msgs/msg/marker.hpp"
@@ -34,6 +35,7 @@ public:
 private:
     void egoCallback(const crp_msgs::msg::Ego::SharedPtr msg);
     void scenarioCallback(const crp_msgs::msg::Scenario::SharedPtr msg);
+    void trajectoryCallback(const autoware_planning_msgs::msg::Trajectory::SharedPtr msg);
     
     void run();
 
@@ -46,9 +48,12 @@ private:
 
     rclcpp::Subscription<crp_msgs::msg::Scenario>::SharedPtr m_sub_scenario_;
     rclcpp::Subscription<crp_msgs::msg::Ego>::SharedPtr m_sub_ego_;
+    rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr m_sub_trajectory_;
 
     rclcpp::Publisher<foxglove_msgs::msg::SceneUpdate>::SharedPtr m_pub_egoVisualization_;
     rclcpp::Publisher<foxglove_msgs::msg::SceneUpdate>::SharedPtr m_pub_objectVisualization_;
+
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_trajectoryVisualization_;
 
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_egoLaneVisualization_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_pub_egoLaneLeftBoundVisualization_;
